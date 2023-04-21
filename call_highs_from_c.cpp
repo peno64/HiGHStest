@@ -305,6 +305,12 @@ void minimal_api_mps2() {
     // Illustrate the minimal interface for reading an mps file. Assumes
     // that the model file is check/instances/avgas.mps
 
+    const char *ver = Highs_version();
+
+    int major = Highs_versionMajor();
+    int minor = Highs_versionMinor();
+    int patch = Highs_versionPatch();
+
     const char *filename = "a.mps";
     // Create a Highs instance
     void *highs = Highs_create();
@@ -680,11 +686,98 @@ void full_api() {
   Highs_destroy(highs);
 }
 
+void test()
+{
+    void *model = Highs_create();
+
+    double infinite = Highs_getInfinity(model);
+
+    int ret;
+
+    {
+        int rowno[] = {0,};
+        double column[] = {0.0,};
+        ret = Highs_addCol(model, 0.0, 0.0, infinite, 0, rowno, column);
+        Highs_passColName(model, 0, "COLONE");
+
+        ret = Highs_changeColBounds(model, 0, 28.6, infinite);
+
+        ret = Highs_changeColIntegrality(model, 0, kHighsVarTypeInteger);
+    }
+
+    {
+        int rowno[] = { 0, };
+        double column[] = { 0.0, };
+        ret = Highs_addCol(model, 0.0, 0.0, infinite, 0, rowno, column);
+        Highs_passColName(model, 1, "COLTWO");
+    }
+
+    {
+        int rowno[] = { 0, };
+        double column[] = { 0.0, };
+        ret = Highs_addCol(model, 0.0, 0.0, infinite, 0, rowno, column);
+        Highs_passColName(model, 2, "COLTHREE");
+    }
+
+    {
+        int rowno[] = { 0, };
+        double column[] = { 0.0, };
+        ret = Highs_addCol(model, 0.0, 0.0, infinite, 0, rowno, column);
+        Highs_passColName(model, 3, "COLFOUR");
+        ret = Highs_changeColBounds(model, 0, 18.0, 48.98);
+    }
+
+    {
+        int index[] = { 3, 1, };
+        double value[] = { 2.9, 78.26, };
+
+        ret = Highs_addRow(model, 92.3, infinite, 2, index, value);
+
+        ret = Highs_passRowName(model, 0, "THISROW");
+    }
+
+    {
+        int index[] = { 0, 2, };
+        double value[] = { 0.24, 11.31, };
+
+        ret = Highs_addRow(model, -infinite, 14.8, 2, index, value);
+
+        ret = Highs_passRowName(model, 1, "THATROW");
+    }
+
+    {
+        int index[] = { 0, 2, 3, };
+        double value[] = { 12.68, 0.08, 0.9, };
+
+        ret = Highs_addRow(model, 4.0, infinite, 3, index, value);
+
+        ret = Highs_passRowName(model, 2, "LASTROW");
+    }
+
+    {
+        double row[] = { 1.0, 3.0, 6.24, 0.1, };
+
+        ret = Highs_changeColsCostByRange(model, 0, 3, row);
+    }
+
+    ret = Highs_changeObjectiveSense(model, kHighsObjSenseMinimize);
+
+    ret = Highs_run(model);
+
+    ret = Highs_writeModel(model, "/temp/model.mps");
+    ret = Highs_writeModel(model, "/temp/model.lp");
+
+    Highs_destroy(model);
+}
+
 int main() {
   //minimal_api();
   //minimal_api_qp();
   //minimal_api_mps();
-  minimal_api_mps2();
+  //minimal_api_mps2();
   //full_api();
+
+    test();
+
   return 0;
 }
