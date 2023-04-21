@@ -686,7 +686,146 @@ void full_api() {
   Highs_destroy(highs);
 }
 
-void test()
+
+void test2()
+{
+    void *model = Highs_create();
+
+    double infinite = Highs_getInfinity(model);
+
+    int ret;
+
+    {
+        int rowno[] = { 0, };
+        double column[] = { 0.0, };
+        ret = Highs_addCol(model, 0.0, 0.0, infinite, 0, rowno, column);
+        Highs_passColName(model, 0, "COLONE");
+
+        ret = Highs_changeColBounds(model, 0, 28.6, infinite);
+    }
+
+    {
+        int rowno[] = { 0, };
+        double column[] = { 0.0, };
+        ret = Highs_addCol(model, 0.0, 0.0, infinite, 0, rowno, column);
+        Highs_passColName(model, 1, "COLTWO");
+    }
+
+    {
+        int rowno[] = { 0, };
+        double column[] = { 0.0, };
+        ret = Highs_addCol(model, 0.0, 0.0, infinite, 0, rowno, column);
+        Highs_passColName(model, 2, "COLTHREE");
+    }
+
+    {
+        int rowno[] = { 0, };
+        double column[] = { 0.0, };
+        ret = Highs_addCol(model, 0.0, 0.0, infinite, 0, rowno, column);
+        Highs_passColName(model, 3, "COLFOUR");
+        ret = Highs_changeColBounds(model, 3, 18.0, 48.98);
+    }
+
+    {
+        int index[] = { 3, 1, };
+        double value[] = { 2.9, 78.26, };
+
+        ret = Highs_addRow(model, 92.3, infinite, 2, index, value);
+
+        ret = Highs_passRowName(model, 0, "THISROW");
+    }
+
+    {
+        int index[] = { 0, 2, };
+        double value[] = { 0.24, 11.31, };
+
+        ret = Highs_addRow(model, -infinite, 14.8, 2, index, value);
+
+        ret = Highs_passRowName(model, 1, "THATROW");
+    }
+
+    {
+        int index[] = { 0, 2, 3, };
+        double value[] = { 12.68, 0.08, 0.9, };
+
+        ret = Highs_addRow(model, 4.0, infinite, 3, index, value);
+
+        ret = Highs_passRowName(model, 2, "LASTROW");
+    }
+
+    {
+        double row[] = { 1.0, 3.0, 6.24, 0.1, };
+
+        ret = Highs_changeColsCostByRange(model, 0, 3, row);
+    }
+
+    ret = Highs_changeObjectiveSense(model, kHighsObjSenseMinimize);
+
+    ret = Highs_run(model);
+
+    ret = Highs_writeModel(model, "/temp/model.mps");
+    ret = Highs_writeModel(model, "/temp/model.lp");
+
+
+    const int num_col = Highs_getNumCol(model);
+    const int num_row = Highs_getNumRow(model);
+
+    double *col_value = (double *)malloc(sizeof(double) * num_col);
+    double *col_dual = (double *)malloc(sizeof(double) * num_col);
+    double *row_value = (double *)malloc(sizeof(double) * num_row);
+    double *row_dual = (double *)malloc(sizeof(double) * num_row);
+
+    int *col_basis_status = (int *)malloc(sizeof(int) * num_col);
+    int *row_basis_status = (int *)malloc(sizeof(int) * num_row);
+
+    // Get the primal and dual solution
+    Highs_getSolution(model, col_value, col_dual, row_value, row_dual);
+    // Get the basis
+    Highs_getBasis(model, col_basis_status, row_basis_status);
+
+    double *col_cost_up_value = (double *)malloc(sizeof(double) * num_col);
+    double *col_cost_up_objective = (double *)malloc(sizeof(double) * num_col);
+    HighsInt *col_cost_up_in_var = (HighsInt *)malloc(sizeof(HighsInt) * num_col);
+    HighsInt *col_cost_up_ou_var = (HighsInt *)malloc(sizeof(HighsInt) * num_col);
+    double *col_cost_dn_value = (double *)malloc(sizeof(double) * num_col);
+    double *col_cost_dn_objective = (double *)malloc(sizeof(double) * num_col);
+    HighsInt *col_cost_dn_in_var = (HighsInt *)malloc(sizeof(HighsInt) * num_col);
+    HighsInt *col_cost_dn_ou_var = (HighsInt *)malloc(sizeof(HighsInt) * num_col);
+    double *col_bound_up_value = (double *)malloc(sizeof(double) * num_col);
+    double *col_bound_up_objective = (double *)malloc(sizeof(double) * num_col);
+    HighsInt *col_bound_up_in_var = (HighsInt *)malloc(sizeof(HighsInt) * num_col);
+    HighsInt *col_bound_up_ou_var = (HighsInt *)malloc(sizeof(HighsInt) * num_col);
+    double *col_bound_dn_value = (double *)malloc(sizeof(double) * num_col);
+    double *col_bound_dn_objective = (double *)malloc(sizeof(double) * num_col);
+    HighsInt *col_bound_dn_in_var = (HighsInt *)malloc(sizeof(HighsInt) * num_col);
+    HighsInt *col_bound_dn_ou_var = (HighsInt *)malloc(sizeof(HighsInt) * num_col);
+
+    double *row_bound_up_value = (double *)malloc(sizeof(double) * num_row);
+    double *row_bound_up_objective = (double *)malloc(sizeof(double) * num_row);
+    HighsInt *row_bound_up_in_var = (HighsInt *)malloc(sizeof(HighsInt) * num_row);
+    HighsInt *row_bound_up_ou_var = (HighsInt *)malloc(sizeof(HighsInt) * num_row);
+    double *row_bound_dn_value = (double *)malloc(sizeof(double) * num_row);
+    double *row_bound_dn_objective = (double *)malloc(sizeof(double) * num_row);
+    HighsInt *row_bound_dn_in_var = (HighsInt *)malloc(sizeof(HighsInt) * num_row);
+    HighsInt *row_bound_dn_ou_var = (HighsInt *)malloc(sizeof(HighsInt) * num_row);
+
+    Highs_getRanging(model, col_cost_up_value, col_cost_up_objective, col_cost_up_in_var, col_cost_up_ou_var, col_cost_dn_value, col_cost_dn_objective, col_cost_dn_in_var, col_cost_dn_ou_var, col_bound_up_value, col_bound_up_objective, col_bound_up_in_var, col_bound_up_ou_var, col_bound_dn_value, col_bound_dn_objective, col_bound_dn_in_var, col_bound_dn_ou_var, row_bound_up_value, row_bound_up_objective, row_bound_up_in_var, row_bound_up_ou_var, row_bound_dn_value, row_bound_dn_objective, row_bound_dn_in_var, row_bound_dn_ou_var);
+
+    // Report the column primal and dual values, and basis status
+    for (int i = 0; i < num_col; i++) {
+        printf("Col%d = %lf; dual = %lf; status = %d, up_value = %f, up_objective = %f, up_in_var = %d,  up_ou_var = %d,  dn_value = %f, dn_objective = %f, dn_in_var = %d, dn_ou_var = %d, up_value = %f, up_objective = %f, up_in_var = %d, up_ou_var = %d, dn_value = %f, dn_objective = %f, dn_in_var[i] = %d, dn_ou_var = %d\n",
+            i, col_value[i], col_dual[i], col_basis_status[i], col_cost_up_value[i], col_cost_up_objective[i], col_cost_up_in_var[i], col_cost_up_ou_var[i], col_cost_dn_value[i], col_cost_dn_objective[i], col_cost_dn_in_var[i], col_cost_dn_ou_var[i], col_bound_up_value[i], col_bound_up_objective[i], col_bound_up_in_var[i], col_bound_up_ou_var[i], col_bound_dn_value[i], col_bound_dn_objective[i], col_bound_dn_in_var[i], col_bound_dn_ou_var[i]);
+    }
+    // Report the row primal and dual values, and basis status
+    for (int i = 0; i < num_row; i++) {
+        printf("Row%d = %lf; dual = %lf; status = %d, up_value = %f, up_objective = %f, up_in_var = %d, up_ou_var = %d, dn_value = %f, dn_objective = %f, dn_in_var = %d, dn_ou_var = %d\n",
+            i, row_value[i], row_dual[i], row_basis_status[i], row_bound_up_value[i], row_bound_up_objective[i], row_bound_up_in_var[i], row_bound_up_ou_var[i], row_bound_dn_value[i], row_bound_dn_objective[i], row_bound_dn_in_var[i], row_bound_dn_ou_var[i]);
+    }
+
+    Highs_destroy(model);
+}
+
+void test5()
 {
     void *model = Highs_create();
 
@@ -777,7 +916,7 @@ int main() {
   //minimal_api_mps2();
   //full_api();
 
-    test();
+    test2();
 
   return 0;
 }
